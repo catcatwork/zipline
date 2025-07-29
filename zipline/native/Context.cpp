@@ -515,3 +515,18 @@ jstring Context::toJavaString(JNIEnv* env, const JSValueConst& value) const {
   env->DeleteLocalRef(utf8BytesObject);
   return result;
 }
+
+jboolean Context::isJobPending(JNIEnv* env) {
+  return JS_IsJobPending(jsRuntime) ? JNI_TRUE : JNI_FALSE;
+}
+
+jint Context::executePendingJob(JNIEnv* env) {
+  JSContext* ctx = nullptr;
+  int result = JS_ExecutePendingJob(jsRuntime, &ctx);
+  // 可能需要处理异常情况
+  if (result < 0 && ctx) {
+    // 处理 JavaScript 异常
+    throwJsException(env, JS_GetException(ctx));
+  }
+  return result;
+}

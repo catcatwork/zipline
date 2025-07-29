@@ -77,6 +77,10 @@ expect class QuickJs : AutoCloseable {
    * @throws QuickJsException if there is an error loading or executing the code.
    */
   fun execute(bytecode: ByteArray): Any?
+  
+  fun isJobPending(): Boolean
+
+  fun executePendingJob(): Int
 
   internal fun initOutboundChannel(outboundChannel: CallChannel)
 

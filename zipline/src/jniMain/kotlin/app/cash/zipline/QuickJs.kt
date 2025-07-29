@@ -148,6 +148,14 @@ actual class QuickJs private constructor(
     return execute(context, bytecode)
   }
 
+  actual fun isJobPending(): Boolean {
+    return isJobPending(context)
+  }
+
+  actual fun executePendingJob(): Int {
+    return executePendingJob(context)
+  }
+
   actual override fun close() {
     val contextToClose = context
     if (contextToClose != 0L) {
@@ -155,6 +163,7 @@ actual class QuickJs private constructor(
       destroyContext(contextToClose)
     }
   }
+  
 
   protected fun finalize() {
     if (context != 0L) {
@@ -173,6 +182,8 @@ actual class QuickJs private constructor(
   private external fun setGcThreshold(context: Long, gcThreshold: Long)
   private external fun gc(context: Long)
   private external fun setMaxStackSize(context: Long, stackSize: Long)
+  private external fun isJobPending(context: Long): Boolean
+  private external fun executePendingJob(context: Long): Int
 }
 
 internal expect fun loadNativeLibrary()

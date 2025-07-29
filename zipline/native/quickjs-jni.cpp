@@ -171,3 +171,23 @@ Java_app_cash_zipline_JniCallChannel_disconnect(JNIEnv* env, jobject thiz, jlong
 
   return channel->disconnect(context, env, instanceName);
 }
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_app_cash_zipline_QuickJs_isJobPending(JNIEnv* env, jobject type, jlong context_) {
+  Context* context = reinterpret_cast<Context*>(context_);
+  if (!context) {
+    throwJavaException(env, "java/lang/IllegalStateException", "QuickJs instance was closed");
+    return JNI_FALSE;
+  }
+  return context->isJobPending(env);
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_app_cash_zipline_QuickJs_executePendingJob(JNIEnv* env, jobject type, jlong context_) {
+  Context* context = reinterpret_cast<Context*>(context_);
+  if (!context) {
+    throwJavaException(env, "java/lang/IllegalStateException", "QuickJs instance was closed");
+    return -1;
+  }
+  return context->executePendingJob(env);
+}

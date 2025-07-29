@@ -32,6 +32,7 @@ import app.cash.zipline.quickjs.JS_EVAL_FLAG_COMPILE_ONLY
 import app.cash.zipline.quickjs.JS_EVAL_FLAG_STRICT
 import app.cash.zipline.quickjs.JS_Eval
 import app.cash.zipline.quickjs.JS_EvalFunction
+import app.cash.zipline.quickjs.JS_ExecutePendingJob
 import app.cash.zipline.quickjs.JS_FreeAtom
 import app.cash.zipline.quickjs.JS_FreeContext
 import app.cash.zipline.quickjs.JS_FreeRuntime
@@ -45,6 +46,7 @@ import app.cash.zipline.quickjs.JS_GetRuntimeOpaque
 import app.cash.zipline.quickjs.JS_HasProperty
 import app.cash.zipline.quickjs.JS_IsArray
 import app.cash.zipline.quickjs.JS_IsException
+import app.cash.zipline.quickjs.JS_IsJobPending
 import app.cash.zipline.quickjs.JS_IsUndefined
 import app.cash.zipline.quickjs.JS_NewAtom
 import app.cash.zipline.quickjs.JS_NewClass
@@ -93,6 +95,7 @@ import kotlin.experimental.ExperimentalNativeApi
 import kotlinx.cinterop.CArrayPointer
 import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.CPointerVar
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.CValuesRef
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -320,6 +323,33 @@ actual class QuickJs private constructor(
     val result = value.toKotlinInstanceOrNull()
     JS_FreeValue(context, value)
     return result
+  }
+
+  actual fun isJobPending(): Boolean {
+    checkNotClosed()
+    return JS_IsJobPending(runtime) != 0
+  }
+
+  actual fun executePendingJob(): Int {
+    checkNotClosed()
+    memScoped {
+      val pctx = alloc<CPointerVar<JSContext>>()
+      val result = JS_ExecutePendingJob(runtime, pctx.ptr)
+      
+      // 如果返回 < 0，表示有异常
+      if (result < 0 && pctx.value != null) {
+        // 切换到有异常的 context 来获取异常信息
+        val currentContext = context
+        try {
+          // 临时将异常 context 设置为当前 context 来抛出异常
+          throwJsException()
+        } catch (e: QuickJsException) {
+          throw e
+        }
+      }
+      
+      return result
+    }
   }
 
   internal actual fun initOutboundChannel(outboundChannel: CallChannel) {

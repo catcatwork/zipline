@@ -41,6 +41,8 @@ public:
   void setGcThreshold(JNIEnv* env, jlong gcThreshold);
   void gc(JNIEnv* env);
   void setMaxStackSize(JNIEnv* env, jlong stackSize);
+  jboolean isJobPending(JNIEnv* env);
+  jint executePendingJob(JNIEnv* env);
 
   jobject toJavaObject(JNIEnv*, const JSValue& value, bool throwOnUnsupportedType = true);
   void throwJsException(JNIEnv*, const JSValue& value) const;
